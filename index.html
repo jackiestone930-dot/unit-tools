@@ -62,6 +62,7 @@
             margin-top: 8px;
             font-size: 16px;
             color: #6e6e73;
+            line-height: 1.5;
         }
         .tab-bar {
             border-top: 1px solid #e5e5ea;
@@ -72,7 +73,6 @@
         }
         .tab {
             flex: 1;
-            padding: 8px 0;
             background: none;
             border: none;
             font-size: 12px;
@@ -95,7 +95,7 @@
             <section class="page active" id="speed">
                 <div class="ios-card">
                     <h2>英里 / 公里（速度）</h2>
-                    <input type="number" id="mph" placeholder="英里 / 小时">
+                    <input type="number" id="mph" placeholder="英里 / 小时" step="any">
                     <p id="kmhResult">→ km/h</p>
                 </div>
             </section>
@@ -104,33 +104,48 @@
             <section class="page" id="volume">
                 <div class="ios-card">
                     <h2>加仑 / 升</h2>
-                    <input type="number" id="gallon" placeholder="加仑">
+                    <input type="number" id="gallon" placeholder="加仑" step="any">
                     <p id="literResult">→ 升</p>
                 </div>
             </section>
 
-            <!-- 面积 -->
+            <!-- 面积（补充英尺&英寸转换） -->
             <section class="page" id="area">
                 <div class="ios-card">
-                    <h2>英尺 / 平方米</h2>
-                    <input type="number" id="lengthIn" placeholder="长度（英寸）">
-                    <input type="number" id="widthIn" placeholder="宽度（英寸）">
-                    <p id="areaFt">→ ft²</p>
-                    <p id="areaM">→ m²</p>
+                    <h2>英寸 / 英尺 / 平方米（面积）</h2>
+                    <p style="margin-bottom: 12px; font-size: 14px; color: #8e8e93;">提示：1 英尺 = 12 英寸</p>
+                    <input type="number" id="lengthIn" placeholder="长度（英寸）" step="any">
+                    <input type="number" id="widthIn" placeholder="宽度（英寸）" step="any">
+                    <p id="lengthWidthFt">→ 长度/宽度（英尺）</p>
+                    <p id="areaFt">→ 面积（平方英尺）</p>
+                    <p id="areaM">→ 面积（平方米）</p>
+                </div>
+            </section>
+
+            <!-- 新增：重量TAB（磅/盎司/公斤） -->
+            <section class="page" id="weight">
+                <div class="ios-card">
+                    <h2>磅 / 盎司 / 公斤（重量）</h2>
+                    <p style="margin-bottom: 12px; font-size: 14px; color: #8e8e93;">提示：1 磅 = 16 盎司 | 1 公斤 ≈ 2.20462 磅</p>
+                    <input type="number" id="pound" placeholder="磅（lb）" step="any">
+                    <input type="number" id="ounce" placeholder="盎司（oz）" step="any">
+                    <input type="number" id="kilo" placeholder="公斤（kg）" step="any">
+                    <p id="weightResult">→ 重量单位换算结果</p>
                 </div>
             </section>
         </main>
 
-        <!-- 底部TAB栏 -->
+        <!-- 底部TAB栏（新增重量TAB） -->
         <nav class="tab-bar">
             <button class="tab active" data-tab="speed"><span>速度</span></button>
             <button class="tab" data-tab="volume"><span>容量</span></button>
             <button class="tab" data-tab="area"><span>面积</span></button>
+            <button class="tab" data-tab="weight"><span>重量</span></button>
         </nav>
     </div>
 
     <script>
-        // 1. 获取DOM元素
+        // 1. 获取所有DOM元素
         const tabBtns = document.querySelectorAll('.tab');
         const pages = document.querySelectorAll('.page');
         // 速度相关
@@ -139,18 +154,27 @@
         // 容量相关
         const gallonInput = document.getElementById('gallon');
         const literResult = document.getElementById('literResult');
-        // 面积相关
+        // 面积相关（补充英尺&英寸）
         const lengthInInput = document.getElementById('lengthIn');
         const widthInInput = document.getElementById('widthIn');
+        const lengthWidthFtResult = document.getElementById('lengthWidthFt');
         const areaFtResult = document.getElementById('areaFt');
         const areaMResult = document.getElementById('areaM');
+        // 重量相关（新增）
+        const poundInput = document.getElementById('pound');
+        const ounceInput = document.getElementById('ounce');
+        const kiloInput = document.getElementById('kilo');
+        const weightResult = document.getElementById('weightResult');
 
-        // 2. 换算常量
+        // 2. 换算常量（新增重量常量，完善面积常量）
         const MILE_TO_KM = 1.609344; // 英里转公里
         const GALLON_TO_LITER = 3.78541; // 美制加仑转升
+        const INCH_TO_FT = 1 / 12; // 英寸转英尺（核心：补充英尺&英寸转换关系）
         const SQFT_TO_SQM = 0.09290304; // 平方英尺转平方米
+        const POUND_TO_KG = 1 / 2.20462; // 磅转公斤
+        const OUNCE_TO_POUND = 1 / 16; // 盎司转磅（核心：补充磅&盎司转换关系）
 
-        // 3. TAB切换逻辑
+        // 3. TAB切换逻辑（兼容新增的重量TAB，无需额外修改）
         tabBtns.forEach(tab => {
             tab.addEventListener('click', () => {
                 // 移除所有active状态
@@ -171,7 +195,7 @@
                 return;
             }
             const kmh = (mph * MILE_TO_KM).toFixed(2);
-            kmhResult.textContent = `${mph} 英里/小时 → ${kmh} km/h`;
+            kmhResult.textContent = `${mph} 英里/小时 → ${kmh} 公里/小时`;
         }
         mphInput.addEventListener('input', updateSpeed);
 
@@ -187,30 +211,87 @@
         }
         gallonInput.addEventListener('input', updateVolume);
 
-        // 6. 面积转换（英寸 → 平方英尺 → 平方米）
+        // 6. 面积转换（完善英尺&英寸转换关系，全程展示链路）
         function updateArea() {
             const lengthIn = parseFloat(lengthInInput.value);
             const widthIn = parseFloat(widthInInput.value);
             
-            if (isNaN(lengthIn) || isNaN(widthIn)) {
-                areaFtResult.textContent = '→ ft²';
-                areaMResult.textContent = '→ m²';
+            // 重置结果（输入无效时）
+            if (isNaN(lengthIn) || isNaN(widthIn) || lengthIn < 0 || widthIn < 0) {
+                lengthWidthFtResult.textContent = '→ 长度/宽度（英尺）';
+                areaFtResult.textContent = '→ 面积（平方英尺）';
+                areaMResult.textContent = '→ 面积（平方米）';
                 return;
             }
 
-            // 英寸转英尺
-            const lengthFt = lengthIn / 12;
-            const widthFt = widthIn / 12;
-            // 计算平方英尺
+            // 步骤1：英寸 → 英尺（明确展示转换关系）
+            const lengthFt = (lengthIn * INCH_TO_FT).toFixed(3);
+            const widthFt = (widthIn * INCH_TO_FT).toFixed(3);
+
+            // 步骤2：英尺 → 平方英尺
             const sqFt = (lengthFt * widthFt).toFixed(2);
-            // 平方英尺转平方米
+
+            // 步骤3：平方英尺 → 平方米
             const sqM = (sqFt * SQFT_TO_SQM).toFixed(3);
 
-            areaFtResult.textContent = `${lengthIn}×${widthIn} 平方英寸 → ${sqFt} ft²`;
-            areaMResult.textContent = `${sqFt} ft² → ${sqM} m²`;
+            // 展示完整转换链路
+            lengthWidthFtResult.textContent = `${lengthIn} 英寸 → ${lengthFt} 英尺 | ${widthIn} 英寸 → ${widthFt} 英尺`;
+            areaFtResult.textContent = `${lengthFt}×${widthFt} 平方英尺 = ${sqFt} 平方英尺（${lengthIn}×${widthIn} 平方英寸）`;
+            areaMResult.textContent = `${sqFt} 平方英尺 → ${sqM} 平方米`;
         }
         lengthInInput.addEventListener('input', updateArea);
         widthInInput.addEventListener('input', updateArea);
+
+        // 7. 新增：重量转换（磅/盎司/公斤，双向联动换算）
+        function updateWeight() {
+            // 获取三个输入框的值
+            const pound = parseFloat(poundInput.value);
+            const ounce = parseFloat(ounceInput.value);
+            const kilo = parseFloat(kiloInput.value);
+
+            // 定义存储最终换算结果的变量
+            let finalPound = 0, finalOunce = 0, finalKilo = 0;
+            let hasValidInput = false;
+
+            // 场景1：输入磅（推导盎司和公斤）
+            if (!isNaN(pound) && pound >= 0) {
+                finalPound = pound;
+                finalOunce = (pound / OUNCE_TO_POUND).toFixed(2);
+                finalKilo = (pound * POUND_TO_KG).toFixed(3);
+                hasValidInput = true;
+            }
+
+            // 场景2：输入盎司（推导磅和公斤）
+            else if (!isNaN(ounce) && ounce >= 0) {
+                finalOunce = ounce;
+                finalPound = (ounce * OUNCE_TO_POUND).toFixed(3);
+                finalKilo = (finalPound * POUND_TO_KG).toFixed(3);
+                hasValidInput = true;
+            }
+
+            // 场景3：输入公斤（推导磅和盎司）
+            else if (!isNaN(kilo) && kilo >= 0) {
+                finalKilo = kilo;
+                finalPound = (kilo / POUND_TO_KG).toFixed(3);
+                finalOunce = (finalPound / OUNCE_TO_POUND).toFixed(2);
+                hasValidInput = true;
+            }
+
+            // 展示结果（无效输入时重置）
+            if (hasValidInput) {
+                weightResult.textContent = `${finalPound} 磅（lb）= ${finalOunce} 盎司（oz）= ${finalKilo} 公斤（kg）`;
+                // 同步更新其他输入框（优化交互，双向联动）
+                if (isNaN(pound)) poundInput.value = finalPound;
+                if (isNaN(ounce)) ounceInput.value = finalOunce;
+                if (isNaN(kilo)) kiloInput.value = finalKilo;
+            } else {
+                weightResult.textContent = '→ 重量单位换算结果（请输入非负有效数字）';
+            }
+        }
+        // 三个输入框都绑定实时转换事件
+        poundInput.addEventListener('input', updateWeight);
+        ounceInput.addEventListener('input', updateWeight);
+        kiloInput.addEventListener('input', updateWeight);
     </script>
 </body>
 </html>
