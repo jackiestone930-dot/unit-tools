@@ -29,97 +29,128 @@
 </section>
   <style>
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #f2f4f7;
-      margin: 0;
-      padding: 16px;
-      -webkit-user-select: none;
-    }
-    .container {
-      max-width: 420px;
-      margin: auto;
-    }
-    h1 {
-      text-align: center;
-      font-size: 20px;
-      margin-bottom: 16px;
-    }
-    .card {
-      background: #fff;
-      padding: 16px;
-      border-radius: 16px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-      margin-bottom: 14px;
-    }
-    h2 {
-      margin-top: 0;
-      font-size: 17px;
-    }
-    input {
-      width: 100%;
-      padding: 12px;
-      font-size: 17px;
-      margin-bottom: 10px;
-      box-sizing: border-box;
-      border-radius: 10px;
-      border: 1px solid #ddd;
-    }
-    button {
-      width: 100%;
-      padding: 12px;
-      font-size: 16px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      background: #007aff;
-      color: white;
-      margin-bottom: 8px;
-    }
-    button.alt {
-      background: #34c759;
-    }
-    .result {
-      text-align: center;
-      font-weight: 600;
-      margin-top: 6px;
-    }
-    .note {
-      text-align: center;
-      font-size: 12px;
-      color: #666;
-      margin-top: 6px;
-    }
+  margin: 0;
+  background: #f2f2f7;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.pages {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.page {
+  display: none;
+  padding: 16px;
+}
+
+.page.active {
+  display: block;
+}
+
+.ios-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 8px 20px rgba(0,0,0,.06);
+}
+
+.ios-card h2 {
+  margin-top: 0;
+  font-size: 18px;
+}
+
+.ios-card input {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  margin: 8px 0;
+  border-radius: 10px;
+  border: 1px solid #d1d1d6;
+}
+
+.ios-card p {
+  font-size: 20px;
+  color: #007aff;
+}
+
+/* Tab Bar */
+.tab-bar {
+  display: flex;
+  border-top: 1px solid #d1d1d6;
+  background: #fff;
+}
+
+.tab {
+  flex: 1;
+  padding: 8px 0;
+  background: none;
+  border: none;
+  font-size: 12px;
+  color: #8e8e93;
+}
+
+.tab span {
+  display: block;
+}
+
+.tab.active {
+  color: #007aff;
+}
   </style>
 </head>
 <body>
 
-<div class="container">
-  <h1>单位转换工具</h1>
+<div class="app">
 
-  <div class="card">
-    <h2>🚗 速度</h2>
-    <input type="number" id="speed" placeholder="mph / km/h">
-    <button onclick="mphToKmh()">mph → km/h</button>
-    <button class="alt" onclick="kmhToMph()">km/h → mph</button>
-    <div class="result" id="speedResult"></div>
-  </div>
+  <!-- 页面内容 -->
+  <main class="pages">
 
-  <div class="card">
-    <h2>📏 距离</h2>
-    <input type="number" id="distance" placeholder="mile / km">
-    <button onclick="mileToKm()">英里 → 公里</button>
-    <button class="alt" onclick="kmToMile()">公里 → 英里</button>
-    <div class="result" id="distanceResult"></div>
-  </div>
+    <!-- 速度 -->
+    <section class="page active" id="speed">
+      <div class="ios-card">
+        <h2>英里 / 公里（速度）</h2>
+        <input type="number" id="mph" placeholder="英里 / 小时">
+        <p id="kmhResult">— km/h</p>
+      </div>
+    </section>
 
-  <div class="card">
-    <h2>⛽ 体积</h2>
-    <input type="number" id="volume" placeholder="gallon / liter">
-    <button onclick="gallonToLiter()">加仑 → 升</button>
-    <button class="alt" onclick="literToGallon()">升 → 加仑</button>
-    <div class="result" id="volumeResult"></div>
-    <div class="note">美制加仑</div>
-  </div>
+    <!-- 容量 -->
+    <section class="page" id="volume">
+      <div class="ios-card">
+        <h2>加仑 / 升</h2>
+        <input type="number" id="gallon" placeholder="加仑">
+        <p id="literResult">— 升</p>
+      </div>
+    </section>
+
+    <!-- 面积 -->
+    <section class="page" id="area">
+      <div class="ios-card">
+        <h2>英寸 → 平方米</h2>
+        <input type="number" id="lengthIn" placeholder="长度（英寸）">
+        <input type="number" id="widthIn" placeholder="宽度（英寸）">
+
+        <p id="areaFt">— ft²</p>
+        <p id="areaM">— ㎡</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 底部 Tab -->
+  <nav class="tab-bar">
+    <button class="tab active" data-tab="speed">🚗<span>速度</span></button>
+    <button class="tab" data-tab="volume">🛢️<span>容量</span></button>
+    <button class="tab" data-tab="area">📐<span>面积</span></button>
+  </nav>
+
 </div>
 
 <script>
@@ -180,6 +211,49 @@ function convertArea() {
   document.getElementById('areaResult').innerText =
   `${areaM2.toFixed(3)} 平方米 (㎡)`;
 }
+</script>
+  <script>
+// Tab 切换
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+
+    tab.classList.add('active');
+    document.getElementById(tab.dataset.tab).classList.add('active');
+  });
+});
+
+// 速度
+document.getElementById('mph').addEventListener('input', e => {
+  const v = parseFloat(e.target.value);
+  document.getElementById('kmhResult').textContent =
+    isNaN(v) ? '— km/h' : (v * 1.609344).toFixed(2) + ' km/h';
+});
+
+// 容量
+document.getElementById('gallon').addEventListener('input', e => {
+  const v = parseFloat(e.target.value);
+  document.getElementById('literResult').textContent =
+    isNaN(v) ? '— 升' : (v * 3.78541).toFixed(2) + ' 升';
+});
+
+// 面积
+function updateArea() {
+  const l = parseFloat(lengthIn.value);
+  const w = parseFloat(widthIn.value);
+  if (isNaN(l) || isNaN(w)) {
+    areaFt.textContent = '— ft²';
+    areaM.textContent = '— ㎡';
+    return;
+  }
+  const ft2 = (l / 12) * (w / 12);
+  areaFt.textContent = ft2.toFixed(2) + ' ft²';
+  areaM.textContent = (ft2 * 0.09290304).toFixed(3) + ' ㎡';
+}
+
+lengthIn.addEventListener('input', updateArea);
+widthIn.addEventListener('input', updateArea);
 </script>
 </body>
 </html>
