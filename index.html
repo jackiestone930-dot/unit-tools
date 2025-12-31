@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <title>单位转换工具</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="单位转换">
     <style>
         * {
             margin: 0;
@@ -11,27 +15,36 @@
             box-sizing: border-box;
             font-family: -apple-system, BlinkMacSystemFont, sans-serif;
         }
+        body {
+            background: #f2f2f7;
+        }
+        .app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        .pages {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+        }
+        .page {
+            display: none; /* 所有面板默认隐藏 */
+        }
+        .page.active {
+            display: block; /* 激活面板显示 */
+        }
         .ios-card {
             background: #fff;
             border-radius: 12px;
             padding: 20px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            margin: 16px;
+            margin-bottom: 16px;
         }
         .ios-card h2 {
             font-size: 18px;
             color: #1d1d1f;
-            margin-bottom: 12px;
-        }
-        .ios-card .hint {
-            font-size: 14px;
-            color: #8e8e93;
             margin-bottom: 16px;
-            padding: 10px;
-            background: #f2f2f7;
-            border-radius: 6px;
-            line-height: 1.8; /* 确保文本不拥挤 */
-            white-space: normal; /* 自动换行，避免截断 */
         }
         .ios-card input {
             width: 100%;
@@ -42,67 +55,305 @@
             margin-bottom: 12px;
             outline: none;
         }
+        .ios-card input:focus {
+            border-color: #007aff;
+        }
         .ios-card p {
             margin-top: 8px;
             font-size: 16px;
             color: #6e6e73;
+            line-height: 1.5;
+        }
+        .ios-card .hint {
+            font-size: 14px;
+            color: #8e8e93;
+            margin-bottom: 12px;
+            padding: 10px;
+            background: #f2f2f7;
+            border-radius: 6px;
+            line-height: 1.8; /* 提高行高，避免文本拥挤 */
+            white-space: normal; /* 确保长文本换行，不被截断 */
+            word-wrap: break-word; /* 自动换行，兼容移动端 */
+        }
+        .tab-bar {
+            border-top: 1px solid #e5e5ea;
+            background: #fff;
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+        }
+        .tab {
+            flex: 1;
+            background: none;
+            border: none;
+            font-size: 12px;
+            color: #8e8e93;
+            text-align: center;
+            cursor: pointer;
+        }
+        .tab span {
+            display: block;
+        }
+        .tab.active {
+            color: #007aff; /* 选中TAB高亮 */
         }
     </style>
 </head>
 <body>
-    <div class="ios-card">
-        <h2>英寸 / 英尺 / 平方米（面积）</h2>
-        <!-- 补全所有换算提示，确保完整显示 -->
-        <div class="hint">提示：1英尺 = 12英寸 | 1英尺 = 0.3048米 | 1平方英尺 = 0.09290304平方米</div>
-        <input type="number" id="lengthIn" placeholder="长度（英寸）" step="any">
-        <input type="number" id="widthIn" placeholder="宽度（英寸）" step="any">
-        <p id="lengthWidthFt">→ 长度/宽度（英尺）</p>
-        <p id="areaFt">→ 面积（平方英尺）</p>
-        <p id="areaM">→ 面积（平方米）</p>
+    <div class="app">
+        <main class="pages">
+            <!-- 1. 速度TAB（保留，功能完好） -->
+            <section class="page active" id="speed">
+                <div class="ios-card">
+                    <h2>英里 / 公里（速度）</h2>
+                    <div class="hint">换算关系：1 英里 = 1.609344 公里</div>
+                    <input type="number" id="mph" placeholder="英里 / 小时" step="any">
+                    <p id="kmhResult">→ 公里/小时</p>
+                </div>
+            </section>
+
+            <!-- 2. 容量TAB（保留，功能完好） -->
+            <section class="page" id="volume">
+                <div class="ios-card">
+                    <h2>加仑 / 升（容量）</h2>
+                    <div class="hint">换算关系：1 美制加仑 = 3.78541 升</div>
+                    <input type="number" id="gallon" placeholder="加仑" step="any">
+                    <p id="literResult">→ 升</p>
+                </div>
+            </section>
+
+            <!-- 3. 长度TAB（保留，功能完好） -->
+            <section class="page" id="length">
+                <div class="ios-card">
+                    <h2>英尺 / 英寸 / 米（长度）</h2>
+                    <div class="hint">换算关系：1 英尺 = 12 英寸 | 1 米 = 3.28084 英尺 | 1 米 = 39.3701 英寸</div>
+                    <input type="number" id="foot" placeholder="英尺（ft）" step="any">
+                    <input type="number" id="inch" placeholder="英寸（in）" step="any">
+                    <input type="number" id="meter" placeholder="米（m）" step="any">
+                    <p id="lengthResult">→ 长度单位换算结果</p>
+                </div>
+            </section>
+
+            <!-- 4. 面积TAB（仅修复提示显示，不改动其他） -->
+            <section class="page" id="area">
+                <div class="ios-card">
+                    <h2>英寸 / 英尺 / 平方米（面积）</h2>
+                    <!-- 核心修复：确保3条换算关系完整显示，无截断 -->
+                    <div class="hint">换算关系：1 英尺 = 12 英寸 | 1 英尺 = 0.3048 米 | 1 平方英尺 = 0.09290304 平方米</div>
+                    <input type="number" id="lengthIn" placeholder="长度（英寸）" step="any">
+                    <input type="number" id="widthIn" placeholder="宽度（英寸）" step="any">
+                    <p id="lengthWidthFt">→ 长度/宽度（英尺）</p>
+                    <p id="areaFt">→ 面积（平方英尺）</p>
+                    <p id="areaM">→ 面积（平方米）</p>
+                </div>
+            </section>
+
+            <!-- 5. 重量TAB（保留，功能完好） -->
+            <section class="page" id="weight">
+                <div class="ios-card">
+                    <h2>磅 / 盎司 / 公斤（重量）</h2>
+                    <div class="hint">换算关系：1 磅 = 16 盎司 | 1 公斤 ≈ 2.20462 磅</div>
+                    <input type="number" id="pound" placeholder="磅（lb）" step="any">
+                    <input type="number" id="ounce" placeholder="盎司（oz）" step="any">
+                    <input type="number" id="kilo" placeholder="公斤（kg）" step="any">
+                    <p id="weightResult">→ 重量单位换算结果</p>
+                </div>
+            </section>
+        </main>
+
+        <!-- 底部TAB栏（保留所有5个TAB，正常切换） -->
+        <nav class="tab-bar">
+            <button class="tab active" data-tab="speed"><span>速度</span></button>
+            <button class="tab" data-tab="volume"><span>容量</span></button>
+            <button class="tab" data-tab="length"><span>长度</span></button>
+            <button class="tab" data-tab="area"><span>面积</span></button>
+            <button class="tab" data-tab="weight"><span>重量</span></button>
+        </nav>
     </div>
 
     <script>
-        // 获取元素
-        const lengthIn = document.getElementById('lengthIn');
-        const widthIn = document.getElementById('widthIn');
-        const lengthWidthFt = document.getElementById('lengthWidthFt');
-        const areaFt = document.getElementById('areaFt');
-        const areaM = document.getElementById('areaM');
+        // 1. 获取所有DOM元素（保留所有TAB相关元素，无删减）
+        const tabBtns = document.querySelectorAll('.tab');
+        const pages = document.querySelectorAll('.page');
+        // 速度相关
+        const mphInput = document.getElementById('mph');
+        const kmhResult = document.getElementById('kmhResult');
+        // 容量相关
+        const gallonInput = document.getElementById('gallon');
+        const literResult = document.getElementById('literResult');
+        // 长度相关
+        const footInput = document.getElementById('foot');
+        const inchInput = document.getElementById('inch');
+        const meterInput = document.getElementById('meter');
+        const lengthResult = document.getElementById('lengthResult');
+        // 面积相关
+        const lengthInInput = document.getElementById('lengthIn');
+        const widthInInput = document.getElementById('widthIn');
+        const lengthWidthFtResult = document.getElementById('lengthWidthFt');
+        const areaFtResult = document.getElementById('areaFt');
+        const areaMResult = document.getElementById('areaM');
+        // 重量相关
+        const poundInput = document.getElementById('pound');
+        const ounceInput = document.getElementById('ounce');
+        const kiloInput = document.getElementById('kilo');
+        const weightResult = document.getElementById('weightResult');
 
-        // 换算常量
-        const INCH_TO_FT = 1 / 12; // 英寸转英尺
-        const SQFT_TO_SQM = 0.09290304; // 平方英尺转平方米
+        // 2. 换算常量（保留所有，无删减）
+        // 速度
+        const MILE_TO_KM = 1.609344;
+        // 容量
+        const GALLON_TO_LITER = 3.78541;
+        // 长度
+        const FT_TO_INCH = 12;
+        const FT_TO_METER = 0.3048;
+        const INCH_TO_METER = 0.0254;
+        // 面积
+        const INCH_TO_FT = 1 / 12;
+        const SQFT_TO_SQM = 0.09290304;
+        // 重量
+        const POUND_TO_KG = 1 / 2.20462;
+        const OUNCE_TO_POUND = 1 / 16;
 
-        // 实时转换函数
+        // 3. TAB切换逻辑（兼容所有5个TAB，正常切换无丢失）
+        tabBtns.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // 移除所有TAB和面板的激活状态
+                tabBtns.forEach(t => t.classList.remove('active'));
+                pages.forEach(p => p.classList.remove('active'));
+                
+                // 激活当前点击的TAB和对应面板
+                const targetTabId = tab.getAttribute('data-tab');
+                tab.classList.add('active');
+                const targetPage = document.getElementById(targetTabId);
+                targetPage.classList.add('active');
+            });
+        });
+
+        // 4. 速度转换（保留，功能正常）
+        function updateSpeed() {
+            const mph = parseFloat(mphInput.value);
+            if (isNaN(mph) || mph < 0) {
+                kmhResult.textContent = '→ 公里/小时';
+                return;
+            }
+            const kmh = (mph * MILE_TO_KM).toFixed(2);
+            kmhResult.textContent = `${mph} 英里/小时 → ${kmh} 公里/小时`;
+        }
+        mphInput.addEventListener('input', updateSpeed);
+
+        // 5. 容量转换（保留，功能正常）
+        function updateVolume() {
+            const gallon = parseFloat(gallonInput.value);
+            if (isNaN(gallon) || gallon < 0) {
+                literResult.textContent = '→ 升';
+                return;
+            }
+            const liter = (gallon * GALLON_TO_LITER).toFixed(2);
+            literResult.textContent = `${gallon} 加仑 → ${liter} 升`;
+        }
+        gallonInput.addEventListener('input', updateVolume);
+
+        // 6. 长度转换（保留，功能正常）
+        function updateLength() {
+            const foot = parseFloat(footInput.value);
+            const inch = parseFloat(inchInput.value);
+            const meter = parseFloat(meterInput.value);
+
+            let finalFoot = 0, finalInch = 0, finalMeter = 0;
+            let hasValidInput = false;
+
+            if (!isNaN(foot) && foot >= 0) {
+                finalFoot = foot;
+                finalInch = (foot * FT_TO_INCH).toFixed(2);
+                finalMeter = (foot * FT_TO_METER).toFixed(3);
+                hasValidInput = true;
+            } else if (!isNaN(inch) && inch >= 0) {
+                finalInch = inch;
+                finalFoot = (inch / FT_TO_INCH).toFixed(3);
+                finalMeter = (inch * INCH_TO_METER).toFixed(3);
+                hasValidInput = true;
+            } else if (!isNaN(meter) && meter >= 0) {
+                finalMeter = meter;
+                finalFoot = (meter / FT_TO_METER).toFixed(3);
+                finalInch = (meter / INCH_TO_METER).toFixed(2);
+                hasValidInput = true;
+            }
+
+            if (hasValidInput) {
+                lengthResult.textContent = `${finalFoot} 英尺（ft）= ${finalInch} 英寸（in）= ${finalMeter} 米（m）`;
+                if (isNaN(foot)) footInput.value = finalFoot;
+                if (isNaN(inch)) inchInput.value = finalInch;
+                if (isNaN(meter)) meterInput.value = finalMeter;
+            } else {
+                lengthResult.textContent = '→ 长度单位换算结果（请输入非负有效数字）';
+            }
+        }
+        footInput.addEventListener('input', updateLength);
+        inchInput.addEventListener('input', updateLength);
+        meterInput.addEventListener('input', updateLength);
+
+        // 7. 面积转换（保留，仅修复提示显示，逻辑不变）
         function updateArea() {
-            const len = parseFloat(lengthIn.value);
-            const wid = parseFloat(widthIn.value);
-
-            // 输入验证
-            if (isNaN(len) || isNaN(wid) || len < 0 || wid < 0) {
-                lengthWidthFt.textContent = '→ 长度/宽度（英尺）';
-                areaFt.textContent = '→ 面积（平方英尺）';
-                areaM.textContent = '→ 面积（平方米）';
+            const lengthIn = parseFloat(lengthInInput.value);
+            const widthIn = parseFloat(widthInInput.value);
+            
+            if (isNaN(lengthIn) || isNaN(widthIn) || lengthIn < 0 || widthIn < 0) {
+                lengthWidthFtResult.textContent = '→ 长度/宽度（英尺）';
+                areaFtResult.textContent = '→ 面积（平方英尺）';
+                areaMResult.textContent = '→ 面积（平方米）';
                 return;
             }
 
-            // 计算长度/宽度（英尺）
-            const lenFt = (len * INCH_TO_FT).toFixed(3);
-            const widFt = (wid * INCH_TO_FT).toFixed(3);
-            // 计算面积（平方英尺）
-            const sqFt = (lenFt * widFt).toFixed(2);
-            // 计算面积（平方米）
+            const lengthFt = (lengthIn * INCH_TO_FT).toFixed(3);
+            const widthFt = (widthIn * INCH_TO_FT).toFixed(3);
+            const sqFt = (lengthFt * widthFt).toFixed(2);
             const sqM = (sqFt * SQFT_TO_SQM).toFixed(3);
 
-            // 显示结果
-            lengthWidthFt.textContent = `→ 长度：${lenFt} 英尺 | 宽度：${widFt} 英尺`;
-            areaFt.textContent = `→ 面积：${sqFt} 平方英尺`;
-            areaM.textContent = `→ 面积：${sqM} 平方米`;
+            lengthWidthFtResult.textContent = `${lengthIn} 英寸 → ${lengthFt} 英尺 | ${widthIn} 英寸 → ${widthFt} 英尺`;
+            areaFtResult.textContent = `${lengthFt}×${widthFt} 平方英尺 = ${sqFt} 平方英尺（${lengthIn}×${widthIn} 平方英寸）`;
+            areaMResult.textContent = `${sqFt} 平方英尺 → ${sqM} 平方米`;
         }
+        lengthInInput.addEventListener('input', updateArea);
+        widthInInput.addEventListener('input', updateArea);
 
-        // 绑定输入事件
-        lengthIn.addEventListener('input', updateArea);
-        widthIn.addEventListener('input', updateArea);
+        // 8. 重量转换（保留，功能正常）
+        function updateWeight() {
+            const pound = parseFloat(poundInput.value);
+            const ounce = parseFloat(ounceInput.value);
+            const kilo = parseFloat(kiloInput.value);
+
+            let finalPound = 0, finalOunce = 0, finalKilo = 0;
+            let hasValidInput = false;
+
+            if (!isNaN(pound) && pound >= 0) {
+                finalPound = pound;
+                finalOunce = (pound / OUNCE_TO_POUND).toFixed(2);
+                finalKilo = (pound * POUND_TO_KG).toFixed(3);
+                hasValidInput = true;
+            } else if (!isNaN(ounce) && ounce >= 0) {
+                finalOunce = ounce;
+                finalPound = (ounce * OUNCE_TO_POUND).toFixed(3);
+                finalKilo = (finalPound * POUND_TO_KG).toFixed(3);
+                hasValidInput = true;
+            } else if (!isNaN(kilo) && kilo >= 0) {
+                finalKilo = kilo;
+                finalPound = (kilo / POUND_TO_KG).toFixed(3);
+                finalOunce = (finalPound / OUNCE_TO_POUND).toFixed(2);
+                hasValidInput = true;
+            }
+
+            if (hasValidInput) {
+                weightResult.textContent = `${finalPound} 磅（lb）= ${finalOunce} 盎司（oz）= ${finalKilo} 公斤（kg）`;
+                if (isNaN(pound)) poundInput.value = finalPound;
+                if (isNaN(ounce)) ounceInput.value = finalOunce;
+                if (isNaN(kilo)) kiloInput.value = finalKilo;
+            } else {
+                weightResult.textContent = '→ 重量单位换算结果（请输入非负有效数字）';
+            }
+        }
+        poundInput.addEventListener('input', updateWeight);
+        ounceInput.addEventListener('input', updateWeight);
+        kiloInput.addEventListener('input', updateWeight);
     </script>
 </body>
 </html>
