@@ -10,7 +10,23 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="单位转换">
+<section class="card">
+  <h2>英寸 → 英尺 → 平方米</h2>
 
+  <label>
+    长（英寸）
+    <input type="number" id="lengthIn" placeholder="例如 120">
+  </label>
+
+  <label>
+    宽（英寸）
+    <input type="number" id="widthIn" placeholder="例如 60">
+  </label>
+
+  <button onclick="convertArea()">转换</button>
+
+  <p id="areaResult"></p>
+</section>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -141,6 +157,29 @@
     volumeResult.innerText = `${v} 升 = ${(v / GALLON).toFixed(2)} 加仑`;
   }
 </script>
+<script>
+function convertArea() {
+  const lengthIn = parseFloat(document.getElementById('lengthIn').value);
+  const widthIn = parseFloat(document.getElementById('widthIn').value);
 
+  if (isNaN(lengthIn) || isNaN(widthIn)) {
+    document.getElementById('areaResult').innerText = '请输入有效的数字';
+    return;
+  }
+
+  // 英寸 → 英尺
+  const lengthFt = lengthIn / 12;
+  const widthFt = widthIn / 12;
+
+  // 平方英尺
+  const areaFt2 = lengthFt * widthFt;
+
+  // 平方英尺 → 平方米
+  const areaM2 = areaFt2 * 0.09290304;
+
+  document.getElementById('areaResult').innerText =
+    `${areaM2.toFixed(3)} 平方米（㎡）`;
+}
+</script>
 </body>
 </html>
